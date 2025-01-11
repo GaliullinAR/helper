@@ -1,3 +1,4 @@
+Set-ExecutionPolicy Unrestricted
 Add-Type -assembly System.Windows.Forms
  
 $main_form = New-Object System.Windows.Forms.Form
@@ -231,6 +232,12 @@ $UserCopyGeneratingPasswordBtn = New-Object System.Windows.Forms.Button
 $UserCopyGeneratingPasswordBtn.Text = 'Скопировать пароль'
 $UserCopyGeneratingPasswordBtn.Size  = New-Object System.Drawing.Size(120,40)
 $UserCopyGeneratingPasswordBtn.Location = New-Object System.Drawing.Point(130,380)
+$UserCopyGeneratingPasswordBtn.Add_Click({
+    if ($UserGeneratingPasswordInput.Text.Length -gt 0) {
+        $Text = $UserGeneratingPasswordInput.Text
+        Set-Clipboard -Value $Text
+    }
+})
 
 $GroupBox.Controls.Add($ADGroupsBtn)
 $GroupBox.Controls.Add($UserInfoBtn)
