@@ -10,13 +10,13 @@ $main_form.AutoSize = $false
 $Users = ''
 
 $GroupBox = New-Object System.Windows.Forms.GroupBox
-$GroupBox.Text = "Работа с профилем"
+$GroupBox.Text = "Р Р°Р±РѕС‚Р° СЃ РїСЂРѕС„РёР»РµРј"
 $GroupBox.AutoSize = $false
 $GroupBox.Location  = New-Object System.Drawing.Point(780,0)
 $GroupBox.Size  = New-Object System.Drawing.Size(400,425)
 
 $UserInfoBtn = New-Object System.Windows.Forms.Button
-$UserInfoBtn.Text = 'УЗ Инфо'
+$UserInfoBtn.Text = 'РЈР— РРЅС„Рѕ'
 $UserInfoBtn.Size  = New-Object System.Drawing.Size(120,40)
 $UserInfoBtn.Location = New-Object System.Drawing.Point(275,15)
 $UserInfoBtn.Add_ClicK({
@@ -34,9 +34,9 @@ $UserInfoBtn.Add_ClicK({
             $UserJobPhoneNumberOutputLabel.Text = $Users.ipPhone
             $UserMobilPhoneNumberInput.Text = $Users.telephoneNumber
             if ($Users.LockedOut) {
-                $UserStatusOutputLabel.Text = 'Заблокирован'
+                $UserStatusOutputLabel.Text = 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ'
             } else {
-                $UserStatusOutputLabel.Text = 'Не заблокирован'
+                $UserStatusOutputLabel.Text = 'РќРµ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ'
             }
             $UserStartPasswordOutputLabel.Text = $Users.PasswordLastSet
 
@@ -49,22 +49,22 @@ $UserInfoBtn.Add_ClicK({
 })
 
 $ADGroupsBtn = New-Object System.Windows.Forms.Button
-$ADGroupsBtn.Text = 'Группы AD'
+$ADGroupsBtn.Text = 'Р“СЂСѓРїРїС‹ AD'
 $ADGroupsBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADGroupsBtn.Location = New-Object System.Drawing.Point(275,60)
 
 $ADUserLocationBtn = New-Object System.Windows.Forms.Button
-$ADUserLocationBtn.Text = 'Распложение УЗ в AD'
+$ADUserLocationBtn.Text = 'Р Р°СЃРїР»РѕР¶РµРЅРёРµ РЈР— РІ AD'
 $ADUserLocationBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADUserLocationBtn.Location = New-Object System.Drawing.Point(275,105)
 
 $ADUserAuthBtn = New-Object System.Windows.Forms.Button
-$ADUserAuthBtn.Text = 'Где авторизован пользователь'
+$ADUserAuthBtn.Text = 'Р“РґРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ'
 $ADUserAuthBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADUserAuthBtn.Location = New-Object System.Drawing.Point(275,150)
 
 $ClearFormBtn = New-Object System.Windows.Forms.Button
-$ClearFormBtn.Text = 'Очистить форму'
+$ClearFormBtn.Text = 'РћС‡РёСЃС‚РёС‚СЊ С„РѕСЂРјСѓ'
 $ClearFormBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ClearFormBtn.Location = New-Object System.Drawing.Point(275,380)
 $ClearFormBtn.Add_ClicK({
@@ -84,12 +84,12 @@ $ClearFormBtn.Add_ClicK({
 })
 
 $UserNameLabel = New-Object System.Windows.Forms.Label
-$UserNameLabel.Text = "Введите имя УЗ"
+$UserNameLabel.Text = "Р’РІРµРґРёС‚Рµ РёРјСЏ РЈР—"
 $UserNameLabel.Location  = New-Object System.Drawing.Point(5,25)
 $UserNameLabel.AutoSize = $true
 
 $FullUserNameLabel = New-Object System.Windows.Forms.Label
-$FullUserNameLabel.Text = "ФИО:"
+$FullUserNameLabel.Text = "Р¤РРћ:"
 $FullUserNameLabel.Location  = New-Object System.Drawing.Point(5,50)
 $FullUserNameLabel.AutoSize = $true
 
@@ -104,7 +104,7 @@ $FullUserNameInput.Text = ''
 $FullUserNameInput.Enabled = $false
 
 $UserDepartamentLabel = New-Object System.Windows.Forms.Label
-$UserDepartamentLabel.Text = "Подразделение:"
+$UserDepartamentLabel.Text = "РџРѕРґСЂР°Р·РґРµР»РµРЅРёРµ:"
 $UserDepartamentLabel.Location  = New-Object System.Drawing.Point(5,75)
 $UserDepartamentLabel.AutoSize = $true
 
@@ -114,7 +114,7 @@ $UserDepartamentOutputLabel.Location  = New-Object System.Drawing.Point(90,75)
 $UserDepartamentOutputLabel.AutoSize = $true
 
 $UserCompanyLabel = New-Object System.Windows.Forms.Label
-$UserCompanyLabel.Text = "Предприятие:"
+$UserCompanyLabel.Text = "РџСЂРµРґРїСЂРёСЏС‚РёРµ:"
 $UserCompanyLabel.Location  = New-Object System.Drawing.Point(5,95)
 $UserCompanyLabel.AutoSize = $true
 
@@ -124,7 +124,7 @@ $UserCompanyOutputLabel.Location  = New-Object System.Drawing.Point(78,95)
 $UserCompanyOutputLabel.AutoSize = $true
 
 $UserCityLabel = New-Object System.Windows.Forms.Label
-$UserCityLabel.Text = "Город:"
+$UserCityLabel.Text = "Р“РѕСЂРѕРґ:"
 $UserCityLabel.Location  = New-Object System.Drawing.Point(5,115)
 $UserCityLabel.AutoSize = $true
 
@@ -134,7 +134,7 @@ $UserCityOutputLabel.Location  = New-Object System.Drawing.Point(40,115)
 $UserCityOutputLabel.AutoSize = $true
 
 $UserOfficeNameLabel = New-Object System.Windows.Forms.Label
-$UserOfficeNameLabel.Text = "Кабинет:"
+$UserOfficeNameLabel.Text = "РљР°Р±РёРЅРµС‚:"
 $UserOfficeNameLabel.Location  = New-Object System.Drawing.Point(5,135)
 $UserOfficeNameLabel.AutoSize = $true
 
@@ -156,17 +156,17 @@ $UserEmailInput.Enabled = $false
 $UserEmailInput.Size = New-Object System.Drawing.Size(180,20)
 
 $UserJobPhoneNumberLabel = New-Object System.Windows.Forms.Label
-$UserJobPhoneNumberLabel.Text = "Рабочий телефон:"
+$UserJobPhoneNumberLabel.Text = "Р Р°Р±РѕС‡РёР№ С‚РµР»РµС„РѕРЅ:"
 $UserJobPhoneNumberLabel.Location  = New-Object System.Drawing.Point(5,175)
 $UserJobPhoneNumberLabel.AutoSize = $true
 
 $UserJobPhoneNumberOutputLabel = New-Object System.Windows.Forms.Label
-$UserJobPhoneNumberOutputLabel.Text = "Рабочий телефон:"
+$UserJobPhoneNumberOutputLabel.Text = "Р Р°Р±РѕС‡РёР№ С‚РµР»РµС„РѕРЅ:"
 $UserJobPhoneNumberOutputLabel.Location  = New-Object System.Drawing.Point(120,175)
 $UserJobPhoneNumberOutputLabel.AutoSize = $true
 
 $UserMobilPhoneNumberLabel = New-Object System.Windows.Forms.Label
-$UserMobilPhoneNumberLabel.Text = "Мобильный телефон:"
+$UserMobilPhoneNumberLabel.Text = "РњРѕР±РёР»СЊРЅС‹Р№ С‚РµР»РµС„РѕРЅ:"
 $UserMobilPhoneNumberLabel.Location  = New-Object System.Drawing.Point(5,195)
 $UserMobilPhoneNumberLabel.AutoSize = $true
 
@@ -178,7 +178,7 @@ $UserMobilPhoneNumberInput.Enabled = $false
 $UserMobilPhoneNumberInput.Size = New-Object System.Drawing.Size(153,20)
 
 $UserStatusLabel = New-Object System.Windows.Forms.Label
-$UserStatusLabel.Text = "Статус УЗ:"
+$UserStatusLabel.Text = "РЎС‚Р°С‚СѓСЃ РЈР—:"
 $UserStatusLabel.Location  = New-Object System.Drawing.Point(5,215)
 $UserStatusLabel.AutoSize = $true
 
@@ -188,7 +188,7 @@ $UserStatusOutputLabel.Location  = New-Object System.Drawing.Point(65,215)
 $UserStatusOutputLabel.AutoSize = $true
 
 $UserStartPasswordLabel = New-Object System.Windows.Forms.Label
-$UserStartPasswordLabel.Text = "Когда пароль задан:"
+$UserStartPasswordLabel.Text = "РљРѕРіРґР° РїР°СЂРѕР»СЊ Р·Р°РґР°РЅ:"
 $UserStartPasswordLabel.Location = New-Object System.Drawing.Point(5,235)
 $UserStartPasswordLabel.AutoSize = $true
 
@@ -198,7 +198,7 @@ $UserStartPasswordOutputLabel.Location = New-Object System.Drawing.Point(115,235
 $UserStartPasswordOutputLabel.AutoSize = $true
 
 $UserEndPasswordLabel = New-Object System.Windows.Forms.Label
-$UserEndPasswordLabel.Text = "Когда пароль завершается:"
+$UserEndPasswordLabel.Text = "РљРѕРіРґР° РїР°СЂРѕР»СЊ Р·Р°РІРµСЂС€Р°РµС‚СЃСЏ:"
 $UserEndPasswordLabel.Location  = New-Object System.Drawing.Point(5,255)
 $UserEndPasswordLabel.AutoSize = $true
 
@@ -208,7 +208,7 @@ $UserEndPasswordOutputLabel.Location  = New-Object System.Drawing.Point(150,255)
 $UserEndPasswordOutputLabel.AutoSize = $true
 
 $UserGeneratingPasswordLabel = New-Object System.Windows.Forms.Label
-$UserGeneratingPasswordLabel.Text = "Генератор паролей"
+$UserGeneratingPasswordLabel.Text = "Р“РµРЅРµСЂР°С‚РѕСЂ РїР°СЂРѕР»РµР№"
 $UserGeneratingPasswordLabel.Location  = New-Object System.Drawing.Point(5,330)
 $UserGeneratingPasswordLabel.AutoSize = $true
 
@@ -220,7 +220,7 @@ $UserGeneratingPasswordInput.Enabled = $false
 $UserGeneratingPasswordInput.Size = New-Object System.Drawing.Size(153,20)
 
 $UserGeneratingPasswordBtn = New-Object System.Windows.Forms.Button
-$UserGeneratingPasswordBtn.Text = 'Сгенерировать пароль'
+$UserGeneratingPasswordBtn.Text = 'РЎРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РїР°СЂРѕР»СЊ'
 $UserGeneratingPasswordBtn.Size  = New-Object System.Drawing.Size(120,40)
 $UserGeneratingPasswordBtn.Location = New-Object System.Drawing.Point(5,380)
 $UserGeneratingPasswordBtn.Add_Click({
@@ -229,7 +229,7 @@ $UserGeneratingPasswordBtn.Add_Click({
 })
 
 $UserCopyGeneratingPasswordBtn = New-Object System.Windows.Forms.Button
-$UserCopyGeneratingPasswordBtn.Text = 'Скопировать пароль'
+$UserCopyGeneratingPasswordBtn.Text = 'РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РїР°СЂРѕР»СЊ'
 $UserCopyGeneratingPasswordBtn.Size  = New-Object System.Drawing.Size(120,40)
 $UserCopyGeneratingPasswordBtn.Location = New-Object System.Drawing.Point(130,380)
 $UserCopyGeneratingPasswordBtn.Add_Click({
