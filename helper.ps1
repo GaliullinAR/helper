@@ -1,4 +1,3 @@
-Set-ExecutionPolicy Unrestricted
 Add-Type -assembly System.Windows.Forms
  
 $main_form = New-Object System.Windows.Forms.Form
@@ -6,9 +5,6 @@ $main_form.Text ='Helper'
 $main_form.Width = 1200
 $main_form.Height = 470
 $main_form.AutoSize = $false
-
-$Users = ''
-
 
 
 # ============== Начало группы для работы с пользователем =====================
@@ -23,11 +19,11 @@ $UserInfoBtn = New-Object System.Windows.Forms.Button
 $UserInfoBtn.Text = 'УЗ Инфо'
 $UserInfoBtn.Size  = New-Object System.Drawing.Size(120,40)
 $UserInfoBtn.Location = New-Object System.Drawing.Point(275,15)
-$UserInfoBtn.Add_ClicK({
-    if ($UserNameInput.Text.Length -gt 4) {
-        $Name = $UserNameInput.Text
-        $Users = Get-ADUser -Filter "(Name -Like '*$Name*') -or (SamAccountName -Like '*$Name*')" -Properties *
-        if ($Users -ne $null) {
+$UserInfoBtn.Add_Click({
+    if ($UserNameInput.Text.Length -gt 3) {
+        $Name = '*' + $UserNameInput.Text + '*'
+        $global:Users = Get-ADUser -Filter {((Name -Like $Name) -or (SamAccountName -Like $Name)) -and (Enabled -eq 'true')} -Properties *
+        if ($Users.Name.Count -eq 1) {
             $UserNameInput.Text = $Users.SamAccountName
             $FullUserNameInput.Text = $Users.DisplayName
             $UserDepartamentOutputLabel.Text = $Users.Department
@@ -47,6 +43,62 @@ $UserInfoBtn.Add_ClicK({
             $Time = $Users.PasswordLastSet
             $end = $Time.AddDays(40)
             $UserEndPasswordOutputLabel.Text = $end
+        } elseif ($Users.Name.Count -gt 1) {
+            $UserInfoPOPUP_FORM = New-Object System.Windows.Forms.Form
+            $UserInfoPOPUP_FORM.Text ='UserInfo'
+            $UserInfoPOPUP_FORM.Width = 400
+            $UserInfoPOPUP_FORM.Height = 400
+            $UserInfoPOPUP_FORM.AutoSize = $false
+
+            $UserInfoListBox = New-Object System.Windows.Forms.ListBox
+            $UserInfoListBox.Location  = New-Object System.Drawing.Point(5,5)
+            $UserInfoListBox.Size  = New-Object System.Drawing.Size(375,350)
+
+            if ($UserInfoListBox.Items.Count -gt 0) {
+                $UserInfoListBox.Items.Clear()
+            }
+
+            foreach ($user in $Users) {
+                $usrname = $user.Name
+                $samaccountname = $user.SamAccountName
+                $UserInfoListBox.Items.Add("Name: $usrname | SamAccountName: $samaccountname")
+            }
+
+            $UserInfoListBox.Add_Click({
+                # $str = ''
+                $Selected = $UserInfoListBox.SelectedItem
+                $Selected = $Selected.Split(' ')
+                $SelectedLogin = $Selected[6]
+                
+                $CurrentUser = $Users | where {$_.SamAccountName -Like $SelectedLogin}
+                $Users = $CurrentUser
+                
+                $UserNameInput.Text = $CurrentUser.SamAccountName
+                $FullUserNameInput.Text = $CurrentUser.DisplayName
+                $UserDepartamentOutputLabel.Text = $CurrentUser.Department
+                $UserCompanyOutputLabel.Text = $CurrentUser.Company
+                $UserCityOutputLabel.Text = $CurrentUser.City
+                $UserOfficeNameOutputLabel.Text = $CurrentUser.physicalDeliveryOfficeName
+                $UserEmailInput.Text = $CurrentUser.Mail
+                $UserJobPhoneNumberOutputLabel.Text = $CurrentUser.ipPhone
+                $UserMobilPhoneNumberInput.Text = $CurrentUser.telephoneNumber
+                if ($CurrentUser.LockedOut) {
+                    $UserStatusOutputLabel.Text = 'Заблокирован'
+                } else {
+                    $UserStatusOutputLabel.Text = 'Не заблокирован'
+                }
+                $UserStartPasswordOutputLabel.Text = $CurrentUser.PasswordLastSet
+    
+                $Time = $CurrentUser.PasswordLastSet
+                $end = $Time.AddDays(40)
+                $UserEndPasswordOutputLabel.Text = $end
+
+                $UserInfoPOPUP_FORM.Close()
+            })
+
+            $UserInfoPOPUP_FORM.Controls.Add($UserInfoListBox)
+
+            $UserInfoPOPUP_FORM.ShowDialog()
         }
     }
 
@@ -56,11 +108,44 @@ $ADGroupsBtn = New-Object System.Windows.Forms.Button
 $ADGroupsBtn.Text = 'Группы AD'
 $ADGroupsBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADGroupsBtn.Location = New-Object System.Drawing.Point(275,60)
+$ADGroupsBtn.Add_Click({
+    if (($UserNameInput.Text.Length -gt 3) -and ($Users -ne $null)) {
+        $MemberOf = $Users.MemberOf.Split(',')
+        $Groups = $MemberOf | where {$_[0] -eq 'C'}
+        $UserInfoPOPUP_FORM = New-Object System.Windows.Forms.Form
+        $UserInfoPOPUP_FORM.Text ='ADGroup'
+        $UserInfoPOPUP_FORM.Width = 400
+        $UserInfoPOPUP_FORM.Height = 400
+        $UserInfoPOPUP_FORM.AutoSize = $false
+
+        $UserInfoListBox = New-Object System.Windows.Forms.ListBox
+        $UserInfoListBox.Location  = New-Object System.Drawing.Point(5,5)
+        $UserInfoListBox.Size  = New-Object System.Drawing.Size(375,350)
+
+        if ($UserInfoListBox.Items.Count -gt 0) {
+            $UserInfoListBox.Items.Clear()
+        }
+        foreach ($group in $Groups) {
+            $group = $group -replace ".*="
+            $UserInfoListBox.Items.Add($group)
+        }
+
+        $UserInfoPOPUP_FORM.Controls.Add($UserInfoListBox)
+
+        $UserInfoPOPUP_FORM.ShowDialog()
+    }
+})
+
 
 $ADUserLocationBtn = New-Object System.Windows.Forms.Button
 $ADUserLocationBtn.Text = 'Распложение УЗ в AD'
 $ADUserLocationBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADUserLocationBtn.Location = New-Object System.Drawing.Point(275,105)
+$ADUserLocationBtn.Add_Click({
+    if (($UserNameInput.Text.Length -gt 3) -and ($Users -ne $null)) {
+        msg * $Users.DistinguishedName
+    }
+})
 
 $ADUserAuthBtn = New-Object System.Windows.Forms.Button
 $ADUserAuthBtn.Text = 'Где авторизован пользователь'
