@@ -87,8 +87,7 @@ $UserInfoBtn.Add_Click({
                 } else {
                     $UserStatusOutputLabel.Text = 'Не заблокирован'
                 }
-                $UserStartPasswordOutputLabel.Text = $CurrentUser.PasswordLastSet
-    
+                $UserStartPasswordOutputLabel.Text = $CurrentUser.PasswordLastSet 
                 $Time = $CurrentUser.PasswordLastSet
                 $end = $Time.AddDays(40)
                 $UserEndPasswordOutputLabel.Text = $end
@@ -136,7 +135,6 @@ $ADGroupsBtn.Add_Click({
     }
 })
 
-
 $ADUserLocationBtn = New-Object System.Windows.Forms.Button
 $ADUserLocationBtn.Text = 'Распложение УЗ в AD'
 $ADUserLocationBtn.Size  = New-Object System.Drawing.Size(120,40)
@@ -151,6 +149,38 @@ $ADUserAuthBtn = New-Object System.Windows.Forms.Button
 $ADUserAuthBtn.Text = 'Где авторизован пользователь'
 $ADUserAuthBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADUserAuthBtn.Location = New-Object System.Drawing.Point(275,150)
+$ADUserAuthBtn.Add_Click({
+    if (($UserNameInput.Text.Length -gt 3) -and ($Users -ne $null)) {
+        $Name = $Users.Name
+        $global:Computers = Get-ADComputer -Filter * -Properties *
+        $CurrentComputer = $Computers | where {$_.Description -Like "*$Name*"}
+        if ($CurrentComputer.Name.Count -eq 1) {
+            $PSNameInput.Text = $CurrentComputer.Name
+        } elseif ($CurrentComputer.Name.Count -gt 1) {
+            $UserInfoPOPUP_FORM = New-Object System.Windows.Forms.Form
+            $UserInfoPOPUP_FORM.Text ='WhereAuthUser'
+            $UserInfoPOPUP_FORM.Width = 400
+            $UserInfoPOPUP_FORM.Height = 400
+            $UserInfoPOPUP_FORM.AutoSize = $false
+
+            $UserInfoListBox = New-Object System.Windows.Forms.ListBox
+            $UserInfoListBox.Location  = New-Object System.Drawing.Point(5,5)
+            $UserInfoListBox.Size  = New-Object System.Drawing.Size(375,350)
+
+            if ($UserInfoListBox.Items.Count -gt 0) {
+                $UserInfoListBox.Items.Clear()
+            }
+
+            foreach ($Name in $CurrentComputer.Name) {
+                $UserInfoListBox.Items.Add($Name)
+            }
+
+            $UserInfoListBox.Add_Click({
+                $PSNameInput.Text = $UserInfoListBox.SelectedItem
+            })
+        }
+    }
+})
 
 $ClearFormBtn = New-Object System.Windows.Forms.Button
 $ClearFormBtn.Text = 'Очистить форму'
