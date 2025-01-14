@@ -153,7 +153,7 @@ $ADUserAuthBtn.Add_Click({
     if (($UserNameInput.Text.Length -gt 3) -and ($Users -ne $null)) {
         $Name = $Users.Name
         $global:Computers = Get-ADComputer -Filter * -Properties *
-        $CurrentComputer = $Computers | where {$_.Description -Like "*$Name*"}
+        $global:CurrentComputer = $Computers | where {$_.Description -Like "*$Name*"}
         if ($CurrentComputer.Name.Count -eq 1) {
             $PSNameInput.Text = $CurrentComputer.Name
         } elseif ($CurrentComputer.Name.Count -gt 1) {
@@ -411,6 +411,31 @@ $PCGetInfoBtn = New-Object System.Windows.Forms.Button
 $PCGetInfoBtn.Text = 'Получить инфо о ПК'
 $PCGetInfoBtn.Size  = New-Object System.Drawing.Size(80,50)
 $PCGetInfoBtn.Location = New-Object System.Drawing.Point(5,15)
+$PCGetInfoBtn.Add_Click({
+    if (($PSNameInput.Text.Length -gt 4) -and ($CurrentComputer -ne $null)) {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+        if ($isLink) {
+            $Memory = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-PSDrive C}
+            $ComputerInfo = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-ComputerInfo}
+            $IPAddress = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-NetIPAddress -IPAddress "10*"}
+            $UsedMemory = [int32]($Memory.Used / 1073741824)
+            $FreeMemory = [int32]($Memory.Free / 1073741824)
+            $TotalMemory = $UsedMemory + $FreeMemory
+            $MemoryRAM = [int32]($ComputerInfo.CsTotalPhysicalMemory / 1073741824)
+
+            $PSMemoryOutput.Text = "$TotalMemory GB | Свободно $FreeMemory GB"
+            $PSRAMOutput.Text = "$MemoryRAM GB"
+            $PSCurrentUserOutput.Text = $ComputerInfo.CsUserName
+            $PSOSInfoOutput.Text = $ComputerInfo.OsName + " " + $ComputerInfo.OsVersion
+            $PSBIOSTypeOutput.Text = $ComputerInfo.BiosFirmwareType
+            $PSWorkTimeOutput.Text = $ComputerInfo.OsLastBootUpTime
+            $PSIPAddressOutput.Text = $IPAddress.IPAddress
+            $PSSerialNumberOutput.Text = $ComputerInfo.BiosSeralNumber
+        } else {
+            msg * "Ошибка! Компьютер не в сети"
+        }
+    }
+})
 
 $PCGetLinkBtn = New-Object System.Windows.Forms.Button
 $PCGetLinkBtn.Text = 'Проверить доступность'
