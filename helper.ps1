@@ -108,7 +108,7 @@ $ADGroupsBtn.Text = 'Группы AD'
 $ADGroupsBtn.Size  = New-Object System.Drawing.Size(120,40)
 $ADGroupsBtn.Location = New-Object System.Drawing.Point(275,60)
 $ADGroupsBtn.Add_Click({
-    if (($UserNameInput.Text.Length -gt 3) -and ($Users -ne $null)) {
+    if (($UserNameInput.Text.Length -gt 0) -and ($Users -ne $null)) {
         $MemberOf = $Users.MemberOf.Split(',')
         $Groups = $MemberOf | where {$_[0] -eq 'C'}
         $UserInfoPOPUP_FORM = New-Object System.Windows.Forms.Form
@@ -132,6 +132,8 @@ $ADGroupsBtn.Add_Click({
         $UserInfoPOPUP_FORM.Controls.Add($UserInfoListBox)
 
         $UserInfoPOPUP_FORM.ShowDialog()
+    } else {
+        msg * "hello world"
     }
 })
 
@@ -177,7 +179,11 @@ $ADUserAuthBtn.Add_Click({
 
             $UserInfoListBox.Add_Click({
                 $PSNameInput.Text = $UserInfoListBox.SelectedItem
+                $UserInfoPOPUP_FORM.Close()
             })
+
+            $UserInfoPOPUP_FORM.Controls.Add($UserInfoListBox)
+            $UserInfoPOPUP_FORM.ShowDialog()
         }
     }
 })
@@ -193,7 +199,7 @@ $ClearFormBtn.Add_ClicK({
     $UserCompanyOutputLabel.Text = ''
     $UserCityOutputLabel.Text = ''
     $UserOfficeNameOutputLabel.Text = ''
-    $UserEmailInput.Text = $Users.Mail
+    $UserEmailInput.Text = ''
     $UserJobPhoneNumberOutputLabel.Text = ''
     $UserMobilPhoneNumberInput.Text = ''
     $UserStatusOutputLabel.Text = ''
@@ -215,6 +221,7 @@ $FullUserNameLabel.AutoSize = $true
 $UserNameInput = New-Object System.Windows.Forms.TextBox
 $UserNameInput.Size = New-Object System.Drawing.Size(170,40)
 $UserNameInput.Location  = New-Object System.Drawing.Point(100,22)
+$UserNameInput.Text = ""
 
 $FullUserNameInput = New-Object System.Windows.Forms.TextBox
 $FullUserNameInput.Size = New-Object System.Drawing.Size(227,40)
@@ -412,7 +419,7 @@ $PCGetInfoBtn.Text = 'Получить инфо о ПК'
 $PCGetInfoBtn.Size  = New-Object System.Drawing.Size(80,50)
 $PCGetInfoBtn.Location = New-Object System.Drawing.Point(5,15)
 $PCGetInfoBtn.Add_Click({
-    if (($PSNameInput.Text.Length -gt 4) -and ($CurrentComputer -ne $null)) {
+    if ($PSNameInput.Text.Length -gt 4) {
         $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
         if ($isLink) {
             $Memory = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-PSDrive C}
@@ -441,16 +448,78 @@ $PCGetLinkBtn = New-Object System.Windows.Forms.Button
 $PCGetLinkBtn.Text = 'Проверить доступность'
 $PCGetLinkBtn.Size  = New-Object System.Drawing.Size(80,50)
 $PCGetLinkBtn.Location = New-Object System.Drawing.Point(90,15)
+$PCGetLinkBtn.Add_Click({
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        msg * "Компьютер доступен"
+    } else {
+        msg * "Компьютер недоступен"
+    }
+})
 
 $PCRebootBtn = New-Object System.Windows.Forms.Button
 $PCRebootBtn.Text = 'Перезагрузить ПК'
 $PCRebootBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCRebootBtn.Location = New-Object System.Drawing.Point(5,72)
+$PCRebootBtn.Add_Click({
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        Restart-Computer -ComputerName $PSNameInput.Text -Force
+    }
+})
 
 $PCGetProcessBtn = New-Object System.Windows.Forms.Button
 $PCGetProcessBtn.Text = 'Запущенные процессы'
 $PCGetProcessBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCGetProcessBtn.Location = New-Object System.Drawing.Point(5,130)
+$PCGetProcessBtn.Add_Click({
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        $Process = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {
+            Get-Process | Select-Object ProcessName, Id
+        }
+
+        $PC_PopupForm = New-Object System.Windows.Forms.Form
+        $PC_PopupForm.Text ='Запущенные процессы'
+        $PC_PopupForm.Width = 400
+        $PC_PopupForm.Height = 500
+        $PC_PopupForm.AutoSize = $false
+    
+        $PC_PopupFormListBox = New-Object System.Windows.Forms.ListBox
+        $PC_PopupFormListBox.Location  = New-Object System.Drawing.Point(5,5)
+        $PC_PopupFormListBox.Size  = New-Object System.Drawing.Size(375,450)
+    
+        if ($PC_PopupFormListBox.Items.Count -gt 0) {
+            $PC_PopupFormListBox.Items.Clear()
+        }
+
+        foreach ($CurrentProcess in $Process) {
+            $ProcessName = $CurrentProcess.ProcessName
+            $ProcessId = $CurrentProcess.Id
+            $ProcessItem = "Имя: $ProcessName | id: $ProcessId"
+            $PC_PopupFormListBox.Items.Add($ProcessItem)
+        }
+
+        $PC_PopupForm.Controls.Add($PC_PopupFormListBox)
+    
+        $PC_PopupForm.ShowDialog()
+    }
+})
 
 $PCServicesBtn = New-Object System.Windows.Forms.Button
 $PCServicesBtn.Text = 'Управление службами'
