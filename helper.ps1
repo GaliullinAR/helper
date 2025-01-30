@@ -71,7 +71,7 @@ $UserInfoBtn.Add_Click({
                 $SelectedLogin = $Selected[6]
                 
                 $CurrentUser = $Users | where {$_.SamAccountName -Like $SelectedLogin}
-                $Users = $CurrentUser
+                $global:Users = $CurrentUser
                 
                 $UserNameInput.Text = $CurrentUser.SamAccountName
                 $FullUserNameInput.Text = $CurrentUser.DisplayName
@@ -206,6 +206,16 @@ $ClearFormBtn.Add_ClicK({
     $UserStartPasswordOutputLabel.Text = ''
     $UserEndPasswordOutputLabel.Text = ''
     $UserGeneratingPasswordInput.Text = ''
+
+    $PSNameInput.Text = ''
+    $PSMemoryOutput.Text = ''
+    $PSRAMOutput.Text = ''
+    $PSCurrentUserOutput.Text = ''
+    $PSOSInfoOutput.Text = ''
+    $PSBIOSTypeOutput.Text = ''
+    $PSWorkTimeOutput.Text = ''
+    $PSIPAddressOutput.Text = ''
+    $PSSerialNumberOutput.Text = ''
 })
 
 $UserNameLabel = New-Object System.Windows.Forms.Label
@@ -422,22 +432,27 @@ $PCGetInfoBtn.Add_Click({
     if ($PSNameInput.Text.Length -gt 4) {
         $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
         if ($isLink) {
-            $Memory = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-PSDrive C}
-            $ComputerInfo = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-ComputerInfo}
-            $IPAddress = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-NetIPAddress -IPAddress "10*"}
-            $UsedMemory = [int32]($Memory.Used / 1073741824)
-            $FreeMemory = [int32]($Memory.Free / 1073741824)
-            $TotalMemory = $UsedMemory + $FreeMemory
-            $MemoryRAM = [int32]($ComputerInfo.CsTotalPhysicalMemory / 1073741824)
-
-            $PSMemoryOutput.Text = "$TotalMemory GB | Свободно $FreeMemory GB"
-            $PSRAMOutput.Text = "$MemoryRAM GB"
-            $PSCurrentUserOutput.Text = $ComputerInfo.CsUserName
-            $PSOSInfoOutput.Text = $ComputerInfo.OsName + " " + $ComputerInfo.OsVersion
-            $PSBIOSTypeOutput.Text = $ComputerInfo.BiosFirmwareType
-            $PSWorkTimeOutput.Text = $ComputerInfo.OsLastBootUpTime
-            $PSIPAddressOutput.Text = $IPAddress.IPAddress
-            $PSSerialNumberOutput.Text = $ComputerInfo.BiosSeralNumber
+            try {
+                $Memory = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-PSDrive C} -ErrorAction continue
+                $ComputerInfo = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-ComputerInfo} -ErrorAction continue
+                $IPAddress = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-NetIPAddress -IPAddress "10*"} -ErrorAction continue
+                $UsedMemory = [int32]($Memory.Used / 1073741824)
+                $FreeMemory = [int32]($Memory.Free / 1073741824)
+                $TotalMemory = $UsedMemory + $FreeMemory
+                $MemoryRAM = [int32]($ComputerInfo.CsTotalPhysicalMemory / 1073741824)
+    
+                $PSMemoryOutput.Text = "$TotalMemory GB | Свободно $FreeMemory GB"
+                $PSRAMOutput.Text = "$MemoryRAM GB"
+                $PSCurrentUserOutput.Text = $ComputerInfo.CsUserName
+                $PSOSInfoOutput.Text = $ComputerInfo.OsName + " " + $ComputerInfo.OsVersion
+                $PSBIOSTypeOutput.Text = $ComputerInfo.BiosFirmwareType
+                $PSWorkTimeOutput.Text = $ComputerInfo.OsLastBootUpTime
+                $PSIPAddressOutput.Text = $IPAddress.IPAddress
+                $PSSerialNumberOutput.Text = $ComputerInfo.BiosSeralNumber
+            }
+            catch {
+                msg * "Компьютер отклонил запрос, возможно проблема в выключенном WinRM"
+            }
         } else {
             msg * "Ошибка! Компьютер не в сети"
         }
@@ -449,6 +464,7 @@ $PCGetLinkBtn.Text = 'Проверить доступность'
 $PCGetLinkBtn.Size  = New-Object System.Drawing.Size(80,50)
 $PCGetLinkBtn.Location = New-Object System.Drawing.Point(90,15)
 $PCGetLinkBtn.Add_Click({
+    $isLink = $false
     try {
         $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
     }
@@ -467,6 +483,7 @@ $PCRebootBtn.Text = 'Перезагрузить ПК'
 $PCRebootBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCRebootBtn.Location = New-Object System.Drawing.Point(5,72)
 $PCRebootBtn.Add_Click({
+    $isLink = $false
     try {
         $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
     }
@@ -483,6 +500,7 @@ $PCGetProcessBtn.Text = 'Запущенные процессы'
 $PCGetProcessBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCGetProcessBtn.Location = New-Object System.Drawing.Point(5,130)
 $PCGetProcessBtn.Add_Click({
+    $isLink = $false
     try {
         $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
     }
@@ -502,7 +520,12 @@ $PCGetProcessBtn.Add_Click({
     
         $PC_PopupFormListBox = New-Object System.Windows.Forms.ListBox
         $PC_PopupFormListBox.Location  = New-Object System.Drawing.Point(5,5)
-        $PC_PopupFormListBox.Size  = New-Object System.Drawing.Size(375,450)
+        $PC_PopupFormListBox.Size  = New-Object System.Drawing.Size(375,370)
+
+        $PC_PopupFormBtn = New-Object System.Windows.Forms.Button
+        $PC_PopupFormBtn.Text = 'Остановить запущенный процесс'
+        $PC_PopupFormBtn.Size  = New-Object System.Drawing.Size(160,60)
+        $PC_PopupFormBtn.Location = New-Object System.Drawing.Point(105,380)
     
         if ($PC_PopupFormListBox.Items.Count -gt 0) {
             $PC_PopupFormListBox.Items.Clear()
@@ -515,7 +538,26 @@ $PCGetProcessBtn.Add_Click({
             $PC_PopupFormListBox.Items.Add($ProcessItem)
         }
 
+        $PC_PopupFormBtn.Add_Click({
+            if ($PC_PopupFormListBox.SelectedItem) {
+                try {
+                    $PC_PopupFormListBoxText = $PC_PopupFormListBox.SelectedItem.Split(' ')[-1]
+                    $ChangedProcess = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {
+                        param($PC_PopupFormListBoxText)
+                        Get-Process | where {$_.Id -Like $PC_PopupFormListBoxText} | Stop-Process -Force
+                    } -ArgumentList $PC_PopupFormListBoxText
+
+                    $PC_PopupFormListBox.Items.Remove($PC_PopupFormListBox.SelectedItem)
+                    $PC_PopupForm.Update()
+                }
+                catch {
+                    msg * "Ошибка! Команда не отправлена"
+                }
+            }
+        })
+
         $PC_PopupForm.Controls.Add($PC_PopupFormListBox)
+        $PC_PopupForm.Controls.Add($PC_PopupFormBtn)
     
         $PC_PopupForm.ShowDialog()
     }
@@ -525,6 +567,50 @@ $PCServicesBtn = New-Object System.Windows.Forms.Button
 $PCServicesBtn.Text = 'Управление службами'
 $PCServicesBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCServicesBtn.Location = New-Object System.Drawing.Point(5,190)
+$PCServicesBtn.Add_Click({
+    $isLink = $false
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        $Services = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-Service}
+
+        $PC_PopupForm = New-Object System.Windows.Forms.Form
+        $PC_PopupForm.Text ='Управление службами'
+        $PC_PopupForm.Width = 700
+        $PC_PopupForm.Height = 500
+        $PC_PopupForm.AutoSize = $false
+    
+        $PC_PopupFormListBox = New-Object System.Windows.Forms.ListBox
+        $PC_PopupFormListBox.Location  = New-Object System.Drawing.Point(5,5)
+        $PC_PopupFormListBox.Size  = New-Object System.Drawing.Size(675,370)
+
+        $PC_PopupFormBtn = New-Object System.Windows.Forms.Button
+        $PC_PopupFormBtn.Text = 'Остановить службу'
+        $PC_PopupFormBtn.Size  = New-Object System.Drawing.Size(160,60)
+        $PC_PopupFormBtn.Location = New-Object System.Drawing.Point(105,380)
+    
+        if ($PC_PopupFormListBox.Items.Count -gt 0) {
+            $PC_PopupFormListBox.Items.Clear()
+        }
+
+        foreach ($CurrentService in $Services) {
+            $ServiceName = $CurrentService.Name
+            $ServiceStatus = $CurrentService.Status
+            $ServiceDisplayName = $CurrentService.DisplayName
+            $ServiceItem = "$ServiceStatus | === $ServiceName === | $ServiceDisplayName"
+            $PC_PopupFormListBox.Items.Add($ServiceItem)
+        }
+
+        $PC_PopupForm.Controls.Add($PC_PopupFormListBox)
+        $PC_PopupForm.Controls.Add($PC_PopupFormBtn)
+
+        $PC_PopupForm.ShowDialog()
+    }
+})
 
 $PCForceSCCMPolicyBtn = New-Object System.Windows.Forms.Button
 $PCForceSCCMPolicyBtn.Text = 'Force SCCM Polices'
@@ -536,11 +622,98 @@ $PCGetLinkPrintersBtn = New-Object System.Windows.Forms.Button
 $PCGetLinkPrintersBtn.Text = 'Подключенные принтеры'
 $PCGetLinkPrintersBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCGetLinkPrintersBtn.Location = New-Object System.Drawing.Point(5,310)
+$PCGetLinkPrintersBtn.Add_Click({
+    $isLink = $false
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        try {
+            $Printers = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-Printer}
+
+            $PC_PopupForm = New-Object System.Windows.Forms.Form
+            $PC_PopupForm.Text ='Подключенные принтеры'
+            $PC_PopupForm.Width = 400
+            $PC_PopupForm.Height = 500
+            $PC_PopupForm.AutoSize = $false
+    
+            $PC_PopupFormListBox = New-Object System.Windows.Forms.ListBox
+            $PC_PopupFormListBox.Location  = New-Object System.Drawing.Point(5,5)
+            $PC_PopupFormListBox.Size  = New-Object System.Drawing.Size(375,440)
+
+    
+            if ($PC_PopupFormListBox.Items.Count -gt 0) {
+                $PC_PopupFormListBox.Items.Clear()
+            }
+
+            foreach ($Printer in $Printers) {
+                $PrinterName = $Printer.Name
+                $PortName = $Printer.PortName
+                $PrinterItem = "$PrinterName | === | === | $PortName"
+                $PC_PopupFormListBox.Items.Add($PrinterItem)
+            }
+
+            $PC_PopupForm.Controls.Add($PC_PopupFormListBox)
+
+            $PC_PopupForm.ShowDialog()
+        }
+        catch {
+            msg * "Не удалось получить список подключенных принтеров"
+        }
+    }
+})
 
 $PCGetProgramListBtn = New-Object System.Windows.Forms.Button
 $PCGetProgramListBtn.Text = 'Список ПО'
 $PCGetProgramListBtn.Size  = New-Object System.Drawing.Size(165,50)
 $PCGetProgramListBtn.Location = New-Object System.Drawing.Point(5,370)
+$PCGetProgramListBtn.Add_Click({
+    $isLink = $false
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        try {
+            $Packages = Invoke-Command -ComputerName $PSNameInput.Text -ScriptBlock {Get-Package | where {$_.ProviderName -Like "msi"}}
+
+            $PC_PopupForm = New-Object System.Windows.Forms.Form
+            $PC_PopupForm.Text ='Устновленные ПО'
+            $PC_PopupForm.Width = 600
+            $PC_PopupForm.Height = 500
+            $PC_PopupForm.AutoSize = $false
+    
+            $PC_PopupFormListBox = New-Object System.Windows.Forms.ListBox
+            $PC_PopupFormListBox.Location  = New-Object System.Drawing.Point(5,5)
+            $PC_PopupFormListBox.Size  = New-Object System.Drawing.Size(575,440)
+
+            if ($PC_PopupFormListBox.Items.Count -gt 0) {
+                $PC_PopupFormListBox.Items.Clear()
+            }
+
+            foreach ($package in $Packages) {
+                $packageName = $package.Name
+                $packageVersion = $package.Version
+                $packageProviderName = $package.ProviderName
+                $packageItem = "$packageName | === | === | $packageVersion | === | === | $packageProviderName"
+                $PC_PopupFormListBox.Items.Add($packageItem)
+            }
+
+            $PC_PopupForm.Controls.Add($PC_PopupFormListBox)
+
+            $PC_PopupForm.ShowDialog()
+        }
+        catch {
+            msg * "Не удалось получить список подключенных принтеров"
+        }
+
+    }
+})
 
 $PCSPOOLRestartBtn = New-Object System.Windows.Forms.Button
 $PCSPOOLRestartBtn.Text = 'SPOOL Restart'
@@ -584,6 +757,24 @@ $PCOpenUserFolderBtn = New-Object System.Windows.Forms.Button
 $PCOpenUserFolderBtn.Text = 'Папка C:\'
 $PCOpenUserFolderBtn.Size  = New-Object System.Drawing.Size(175,50)
 $PCOpenUserFolderBtn.Location = New-Object System.Drawing.Point(590,370)
+$PCOpenUserFolderBtn.Add_Click({
+    $isLink = $false
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    if ($isLink) {
+        try {
+            $Text = $PSNameInput.Text
+            Invoke-Item "\\$Text\c$"
+        }
+        catch {
+            msg * "Не удалось открыть каталог пользователя"
+        }
+    }
+})
 
 $PCRestartSCCMBtn = New-Object System.Windows.Forms.Button
 $PCRestartSCCMBtn.Text = 'Restart SCCM'
@@ -602,7 +793,7 @@ $PCPingBtn.Text = 'Ping'
 $PCPingBtn.Size  = New-Object System.Drawing.Size(55,50)
 $PCPingBtn.Location = New-Object System.Drawing.Point(590,130)
 $PCPingBtn.Add_Click({
-    $Value = $UserNameInput.Text
+    $Value = $PSNameInput.Text
     Start-Process -FilePath "C:\Windows\System32\cmd.exe" -verb runas -ArgumentList '/c ping', "$Value"
 })
 
@@ -611,7 +802,7 @@ $PCPingABtn.Text = 'Ping -a'
 $PCPingABtn.Size  = New-Object System.Drawing.Size(55,50)
 $PCPingABtn.Location = New-Object System.Drawing.Point(650,130)
 $PCPingABtn.Add_Click({
-    $Value = $UserNameInput.Text
+    $Value = $PSNameInput.Text
     Start-Process -FilePath "C:\Windows\System32\cmd.exe" -verb runas -ArgumentList '/c ping -a', "$Value"
 })
 
@@ -620,7 +811,7 @@ $PCPingTBtn.Text = 'Ping -t'
 $PCPingTBtn.Size  = New-Object System.Drawing.Size(55,50)
 $PCPingTBtn.Location = New-Object System.Drawing.Point(710,130)
 $PCPingTBtn.Add_Click({
-    $Value = $UserNameInput.Text
+    $Value = $PSNameInput.Text
     Start-Process -FilePath "C:\Windows\System32\cmd.exe" -verb runas -ArgumentList '/c ping -t', "$Value"
 })
 
@@ -628,6 +819,22 @@ $PCConnectToPCBtn = New-Object System.Windows.Forms.Button
 $PCConnectToPCBtn.Text = 'Подключиться к ПК'
 $PCConnectToPCBtn.Size  = New-Object System.Drawing.Size(175,50)
 $PCConnectToPCBtn.Location = New-Object System.Drawing.Point(590,72)
+$PCConnectToPCBtn.Add_Click({
+    $isLink = $false
+    try {
+        $isLink = Test-Connection $PSNameInput.Text -Count 1 -Quiet
+    }
+    catch {
+        msg * "Компьютер недоступен"
+    }
+    # $IPv4 = $PSIPAddressOutput.Text
+    $PSLinkName = $PSNameInput.Text
+    if ($isLink) {
+        & 'C:\Program Files\TightVNC\tvnviewer.exe' "$PSLinkName::5900" -password=User -scale=auto -fullscreen
+    } else {
+        msg * "Не удается подключиться к ПК, проверьте верно ли указано имя хоста."
+    }
+})
 
 $PCClearDNSsufBtn = New-Object System.Windows.Forms.Button
 $PCClearDNSsufBtn.Text = 'Очистить DNS суффиксы'
